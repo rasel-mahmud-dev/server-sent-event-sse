@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SSE Client</title>
+    <link rel="stylesheet" href="/style.css">
+
+</head>
+<body>
+
+<div>
+
+    <button onclick="onStartProgress()">Start Upload</button>
+    <ol class="stepper">
+        <li data-id="UPLOADING_AREA">
+            <span>UPLOADING AREA</span>
+        </li>
+        <li data-id="UPLOADING_DEPARTMENT">
+            <span>UPLOADING DEPARTMENT</span>
+        </li>
+        <li data-id="UPLOADING_DESIGNATION">
+            <span>UPLOADING DESIGNATION</span>
+        </li>
+        <li data-id="UPLOADING_EMPLOYEE">
+            <span>UPLOADING EMPLOYEE</span>
+        </li>
+        <li data-id="UPLOADING_SCHEDULE">
+            <span>UPLOADING SCHEDULE</span>
+        </li>
+        <li data-id="UPLOADING_DRIVERS">
+            <span>UPLOADING DRIVERS</span>
+        </li>
+        <li data-id="UPLOADING_ASSIGN_CAR">
+            <span>UPLOADING ASSIGN CAR</span></li>
+        <li data-id="COMPLETED">
+            <span>COMPLETED</span>
+        </li>
+    </ol>
+
+
+</div>
+
+<script>
+
+    const stepper = document.querySelectorAll(".stepper li")
+
+    function uploadBatchTask(){
+        fetch("/api/upload-batch", {
+            method: "POST"
+        })
+    }
+
+    function onStartProgress() {
+        // reset active cls..
+        for (let step of stepper) {
+            step.classList.remove("active")
+        }
+
+        uploadBatchTask()
+
+        const eventSource = new EventSource('/api/events');
+        eventSource.onmessage = function (event) {
+            const message = event.data
+            for (let step of stepper) {
+                const id = step.dataset.id
+
+                if (message.startsWith(id)) {
+                    step.classList.add("active")
+                }
+
+            }
+
+            if (message === "COMPLETED") {
+                eventSource.close();
+            }
+        };
+
+        eventSource.onerror = function(error) {
+            console.error("EventSource failed:", error);
+            eventSource.close();
+        };
+    }
+
+
+</script>
+
+</body>
+</html>
