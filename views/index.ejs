@@ -45,37 +45,44 @@
 
 <script>
 
+    let eventSource;
     const stepper = document.querySelectorAll(".stepper li")
 
-    function uploadBatchTask(){
-        fetch("/api/upload-batch", {
-            method: "POST"
-        })
+    async function uploadBatchTask(){
+        try{
+            const formData = new FormData()
+            formData.append("file", 'some_large_xlsx.xlsx')
+            const res = await fetch("/api/upload-batch", {
+                method: "POST",
+                headers: {},
+                body: formData
+            })
+            const data = await res.json()
+        } catch (ex){
+            // handle error
+        }
     }
-
-    let eventSource;
-
-
 
     function onStartProgress() {
         // reset active cls..
         resetUI()
-
         uploadBatchTask()
 
         eventSource = new EventSource('/api/events');
         eventSource.onmessage = function (event) {
-            const message = event.data
+            const evtData = event.data
             for (let step of stepper) {
                 const id = step.dataset.id
 
-                if (message.startsWith(id)) {
+                // Update UI step
+                if (evtData.startsWith(id)) {
                     step.classList.add("active")
                 }
 
             }
 
-            if (message === "COMPLETED") {
+            if (evtData === "COMPLETED") {
+                // Terminating SSE communication
                 eventSource.close();
             }
         };
