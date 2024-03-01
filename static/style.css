@@ -91,7 +91,17 @@ button{
     padding: 10px 20px;
     outline: none;
     border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin: 20px auto;
+    border: 2px solid #ffc3b1;
+    cursor: pointer;
+}
+
+.control{
+    display: flex;
+    justify-content: center;
+    max-width: 250px;
     margin: auto;
-    width: max-content;
-    text-align: center;
 }
